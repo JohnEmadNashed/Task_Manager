@@ -1,0 +1,7 @@
+//command lines:
+
+ng serve (start webpage)
+npm install express --save (install express)
+nodemon app.js (to start the server side)
+npm install mongoose --save (install mongoose)
+npm install body-parser --save (install body for post in app.js)
