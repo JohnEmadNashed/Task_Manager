@@ -1,1 +1,14 @@
-<p>new-list works!</p>
+<div class="centered-content">
+  <div class="Modal-box">
+    <h1 class="title">Create a new list</h1>
+
+    <input #listTitleInput class="input has-background-light is-medium" type="text" placeholder="Enter list name...">
+    <br><br>
+    <div class="buttons is-right">
+      <button routerLink="/" class="button is-medium">Cancel</button>
+      <button class="button is-primary is-medium has-text-white" (click)="createList(listTitleInput.value)">Create</button>
+    </div>
+
+  </div>
+</div>
+
