@@ -20,21 +20,24 @@ $input-shadow : none;
 
 //set custom global styles (will be applied to whole app)
 html{
-  height: 100%;
   background : linear-gradient(to right top , $turquoise , $green)
-
 }
-html.body{
+html,body{
   height : 100%;
-  // margin: 0;
-  // background-repeat: no-repeat;
-  // background-attachment: fixed;
 }
 .centered-content{
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
   height: 100%;
+}
+.Modal-box{
+  min-height: 200px;
+  width: 100%;
+  max-width: 580px;
+  background: white;
+  border-radius: 5px;
+  padding: 32px;
 }

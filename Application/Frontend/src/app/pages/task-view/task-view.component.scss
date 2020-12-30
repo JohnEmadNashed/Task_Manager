@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   width: 250px;
-  height: 600px;
+  height: 100%;
   padding: 42px;
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
@@ -68,19 +68,24 @@
   margin-top: 10px;
   cursor: pointer;
   transition: box-shadow 0.2s ease transform 0.2s ease;
-
-  &.not-complete{
-    &:active{
-      transform: scale(0.95);
-    }
-
-    &:hover{
-      box-shadow: 0 0 0 5px #eeeeee;
-    }
+  &:active{
+    transform: scale(0.95);
+  }
+  &:hover{
+    box-shadow: 0 0 0 5px #eeeeee;
   }
 
+  // &.not-complete{
+  //   &:active{
+  //     transform: scale(0.95);
+  //   }
 
-  &.complete{
+  //   &:hover{
+  //     box-shadow: 0 0 0 5px #eeeeee;
+  //   }
+  // }
+
+  &.completed{
     text-decoration: line-through;
     opacity: 70%;
   }

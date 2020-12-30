@@ -49,7 +49,7 @@ app.patch('/lists/:id' , (req , res) => {
     List.findOneAndUpdate({ _id:req.params.id } , {
         $set: req.body
     }).then(() => {
-        res.sendStatus(200)
+        res.sendStatus(200);
     });
 
 });
@@ -97,7 +97,7 @@ app.patch('/lists/:listId/tasks/:taskId' , (req , res) => {
     }, {
         $set: req.body
         }).then(() => {
-        res.sendStatus(200)
+        res.send({message: "updated successfully!"})
     });
 
 });
