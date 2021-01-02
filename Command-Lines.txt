@@ -6,3 +6,6 @@ nodemon app.js (to start the server side)
 npm install mongoose --save (install mongoose)
 npm install body-parser --save (install body for post in app.js)
 npm install bulma --save (intstall bulma frontend)
+npm install lodash --save
+npm install jsonwebtoken --save (install jsonwebtokens)
+npm install bcryptjs --save (install bcrypt to hash functions)
