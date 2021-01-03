@@ -7,7 +7,7 @@ const {mongoose} = require('./db/mongoose');
 //Load in the Mongoose Models
 const { List,Task, User }= require('./db/models');
 const { userInfo } = require('os');
-
+const jwt = require('jsonwebtoken');
 /* MIDDLEWARE  */
 
 // Load middleware
@@ -102,21 +102,24 @@ let verifySession = (req, res, next) => {
 
 /*LIST ROUTES*/
 // Get List 
-app.get( '/lists' , (req , res) => {
+app.get( '/lists' , authenticate ,(req , res) => {
     
-    //we want to return an array of all the lists in the database
-    List.find({}).then((lists)=> {
+    //we want to return an array of all the lists that belong to the authenticated user
+    List.find({
+         _userId: req.user_id
+    }).then((lists)=> {
         res.send(lists);
     }) 
 });
 
 // Post List 
-app.post('/lists', (req , res) => {
+app.post('/lists', authenticate ,(req , res) => {
 
     //we want to create a new list and return the new list documents back to the user (which includes the id)
     let title = req.body.title;
     let newList = new List({
-        title
+        title,
+        _userId: req.user_id
     });
     newList.save().then((listDoc) => {
         res.send(listDoc);
@@ -125,10 +128,10 @@ app.post('/lists', (req , res) => {
 });
 
 // Update List 
-app.patch('/lists/:id' , (req , res) => {
+app.patch('/lists/:id' , authenticate ,(req , res) => {
     
     //we want to update the list with new values specified in the JSON body 
-    List.findOneAndUpdate({ _id:req.params.id } , {
+    List.findOneAndUpdate({ _id:req.params.id, _userId: req.user_id } , {
         $set: req.body
     }).then(() => {
         res.sendStatus(200);
@@ -137,12 +140,15 @@ app.patch('/lists/:id' , (req , res) => {
 });
 
 // Delete List 
-app.delete('/lists/:id' , (req , res) => {
+app.delete('/lists/:id' , authenticate , (req , res) => {
     
     //delete the specified list
-    List.findOneAndRemove({_id: req.params.id})
+    List.findOneAndRemove({_id: req.params.id, _userId: req.user_id})
     .then((removedListDoc) => {
         res.send(removedListDoc);
+
+        //delete all the tasks in the deleted list
+        deleteTasksFromList(removedListDoc._id);
     })
     ; 
     
@@ -150,7 +156,7 @@ app.delete('/lists/:id' , (req , res) => {
 
 /*Task ROUTES*/
 // Get Task
-app.get('/lists/:listId/tasks' , (req,res) => {
+app.get('/lists/:listId/tasks' , authenticate ,(req,res) => {
     Task.find({
         _listId: req.params.listId
     }).then((tasks)=> {
@@ -159,45 +165,92 @@ app.get('/lists/:listId/tasks' , (req,res) => {
 });
 
 // Post Task
-app.post('/lists/:listId/tasks', (req , res) => {
+app.post('/lists/:listId/tasks', authenticate , (req , res) => {
 
-    //we want to create a new task and return the new task documents back to the user (which includes the id)
-    let newTask = new Task({
-        title: req.body.title,
-        _listId: req.params.listId
-    });
-    newTask.save().then((newtaskDoc) => {
-        res.send(newtaskDoc);
+    List.findOne({
+        _id: req.params.listId,
+        _userId: req.user_id
+    }).then ((list) => {
+        if (list){
+            return true;
+        }
+        return false;
+    }).then ((canCreateTask) => {
+        if (canCreateTask) {
+            //we want to create a new task and return the new task documents back to the user (which includes the id)
+            let newTask = new Task({
+                title: req.body.title,
+                _listId: req.params.listId
+            });
+            newTask.save().then((newtaskDoc) => {
+                res.send(newtaskDoc);
+            })
+        } else {
+            res.sendStatus(404);
+        }
     })
+
 
 })
 
 // Update Task
-app.patch('/lists/:listId/tasks/:taskId' , (req , res) => {
+app.patch('/lists/:listId/tasks/:taskId' , authenticate , (req , res) => {
     
     //we want to update the task with new values specified in the JSON body 
-    Task.findOneAndUpdate({ 
-        _id: req.params.taskId,
-        _listId: req.params.listId
 
-    }, {
-        $set: req.body
-        }).then(() => {
-        res.send({message: "updated successfully!"})
-    });
+    List.findOne({
+        _id: req.params.listId,
+        _userId: req.user_id
+    }).then ((list) => {
+        if (list){
+            return true;
+        }
+        return false;
+    }).then ((canUpdateTasks) => {
+        if(canUpdateTasks){
+            Task.findOneAndUpdate({ 
+                _id: req.params.taskId,
+                _listId: req.params.listId
+        
+            }, {
+                $set: req.body
+                }).then(() => {
+                res.send({message: "updated successfully!"})
+            });            
+        } else {
+            res.sendStatus(404);
+        }
+    })
+
 
 });
 
 // Delete Task
-app.delete('/lists/:listId/tasks/:taskId' , (req , res) => {
+app.delete('/lists/:listId/tasks/:taskId' , authenticate , (req , res) => {
+
+    List.findOne({
+        _id: req.params.listId,
+        _userId: req.user_id
+    }).then ((list) => {
+        if (list){
+            return true;
+        }
+        return false;
+    }).then ((canDeleteTasks) => {
+        if(canDeleteTasks){
+            //delete the specified task from list
+            Task.findOneAndRemove({
+                _id: req.params.taskId,
+                _listId: req.params.listId
+            }).then((removedTaskDoc) => {
+                res.send(removedTaskDoc);
+            })
+        } else {
+            res.sendStatus(404);
+        }
+
+    });
     
-    //delete the specified list
-    Task.findOneAndRemove({
-        _id: req.params.taskId,
-        _listId: req.params.listId
-    }).then((removedTaskDoc) => {
-        res.send(removedTaskDoc);
-    })
 });
 
 
